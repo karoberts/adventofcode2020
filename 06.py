@@ -13,4 +13,24 @@ with open("06.txt") as f:
 
     count += len(yes_set)
 
-    print(count)
+    print('part1', count)
+
+with open("06.txt") as f:
+    yes_sets = []
+    count = 0
+    for line in (l.strip() for l in f):
+        if line == '':
+            if len(yes_sets) > 0:
+                count += len(yes_sets[0].intersection(*yes_sets[1:]))
+            yes_sets.clear()
+            continue
+
+        s = set()
+        for c in line:
+            s.add(c)
+        yes_sets.append(s)
+
+    if len(yes_sets) > 0:
+        count += len(yes_sets[0].intersection(*yes_sets[1:]))
+
+    print('part2', count)
