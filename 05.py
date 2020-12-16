@@ -29,10 +29,18 @@ def seat_id(bsp):
         raise 1
 
     #print(row_min, col_min, row_min * 8 + col_min)
-    return row_min * 8 + col_min
+    return (row_min * 8 + col_min, row_min, col_min)
 
 #seat_id('FBFBBFFRLR')
 
 with open('05.txt') as f:
-    r = max((seat_id(l.strip()) for l in f))
+    seats = [seat_id(l.strip()) for l in f]
+    r = max((s[0] for s in seats))
     print('part1', r)
+
+    seatset = set((s[0] for s in seats))
+    for i in range(0, r + 1):
+        if i in seatset: continue
+        if i - 1 in seatset and i + 1 in seatset:
+            print('part2', i)
+            break
