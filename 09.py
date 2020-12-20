@@ -1,5 +1,6 @@
 
 preamble = 25
+invalid = -1
 
 with open("09.txt") as f:
     nums = []
@@ -17,6 +18,24 @@ with open("09.txt") as f:
                 #print('found', num - nums[i], '+', nums[i])
                 break
         else:
-            print('part1', num)
-            quit()
+            invalid = num
+            break
+
+        if invalid > 0:
+            break
         pos += 1
+
+print('part1', invalid)
+
+for i in range(0, len(nums)):
+    i_sum = 0
+    for j in range(i, len(nums)):
+        i_sum += nums[j]
+        if i_sum > invalid:
+            break
+        elif i_sum == invalid:
+            #print('found', i, j, nums[i:j+1])
+            min_n = min(nums[i:j+1])
+            max_n = max(nums[i:j+1])
+            print('part2', min_n + max_n)
+            quit()
