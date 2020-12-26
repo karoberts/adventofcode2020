@@ -8,9 +8,15 @@ def outputgrid(g, xs, ys):
     print()
 
 def gridval(g, x, y, a, xs, ys):
-    if x + a[0] == -1 or x + a[0] >= x_size: return '.'
-    if y + a[1] == -1 or y + a[1] >= y_size: return '.'
-    return grid[(x + a[0], y + a[1])]
+    while True:
+        x += a[0]
+        y += a[1]
+        if x == -1 or x >= x_size: return '.'
+        if y == -1 or y >= y_size: return '.'
+        nk = (x,y)
+        if g[nk] != '.':
+            return g[(x, y)]
+
 
 grid = defaultdict(lambda:'.')
 x_size = 0
@@ -41,7 +47,7 @@ while True:
                     next_grid[k] = '#'
                     mods += 1
             elif grid[k] == '#':
-                if sum(1 for a in adj if gridval(grid, x, y, a, x_size, y_size) == '#') >= 4:
+                if sum(1 for a in adj if gridval(grid, x, y, a, x_size, y_size) == '#') >= 5:
                     next_grid[k] = 'L'
                     mods += 1
     if mods == 0:
