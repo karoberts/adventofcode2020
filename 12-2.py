@@ -11,29 +11,29 @@ with open("12.txt") as f:
         instructions.append((d, a))
 
 pos = 0 + 0j
-direc = 1 + 0j # east
+waypoint = 10 - 1j
 
 for i in instructions:
-    #print(i, pos, direc)
+    #print(i, pos, waypoint)
     if i[0] == 'F':
-        pos += (direc * i[1])
+        pos += waypoint * i[1]
     elif i[0] == 'N':
-        pos += complex(0, -i[1])
+        waypoint += complex(0, -i[1])
     elif i[0] == 'S':
-        pos += complex(0, i[1])
+        waypoint += complex(0, i[1])
     elif i[0] == 'E':
-        pos += complex(i[1], 0)
+        waypoint += complex(i[1], 0)
     elif i[0] == 'W':
-        pos += complex(-i[1], 0)
+        waypoint += complex(-i[1], 0)
     elif i[0] == 'L':
         deg = i[1]
         while deg > 0:
-            direc *= -1j
+            waypoint *= -1j
             deg -= 90
     elif i[0] == 'R':
         deg = i[1]
         while deg > 0:
-            direc *= 1j
+            waypoint *= 1j
             deg -= 90
 
-print('part1', pos, manhat_dist(pos))
+print('part2', pos, manhat_dist(pos))
