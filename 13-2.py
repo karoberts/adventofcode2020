@@ -29,9 +29,9 @@ with open("13.txt") as f:
     a = [v - i for i, v in enumerate(buses) if v != -1]
     n = [b for b in buses if b != -1]
 
-    print(a)
-    print(n)
+    #print(a)
+    #print(n)
 
     r = chinese_remainder(n, a)
-    print(r)
+    print('part2', r)
 
