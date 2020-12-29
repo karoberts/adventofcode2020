@@ -1,70 +1,101 @@
 from datetime import datetime
+from typing import List, Dict, DefaultDict, Tuple, Set
+from collections import defaultdict
 
-def recurse(adapters, cur_jolts, count1, count3):
-    #print('start', cur_jolts, adapters)
-    if len(adapters) == 0:
-        return (count1, count3 + 1)
-    for a in adapters:
-        #print('loop', a)
-        if a - 3 == cur_jolts or a - 1 == cur_jolts:
-            count1_delt = (1 if a - 1 == cur_jolts else 0)
-            count3_delt = (1 if a - 3 == cur_jolts else 0)
+import numpy as np
 
-            new_adapters = adapters.copy()
-            new_adapters.remove(a)
-            #print('recursing on adapter', cur_jolts, a, new_adapters)
-            r = recurse(new_adapters, a, count1 + count1_delt, count3 + count3_delt)
-            if r is not None:
-                #print('found', r)
-                return r
+class Node:
+    def __init__(self, jolts:int):
+        self.children:Dict[int,Node] = {}
+        self.parents:Dict[int,Node] = {}
+        self.jolts = jolts
 
-    #print('ret', cur_jolts, adapters)
-    return None
+    def is_exp(self, exp:int):
+        return self.jolts + 3 == exp
 
-def recurse2(adapters, cur_jolts, exp, depth):
-    print(' ' * depth, 'start', cur_jolts)
-    if cur_jolts + 3 == exp:
-        #print('found!')
-        return 1
-    tot = 0
-    for (i, a) in enumerate(adapters):
-        if a <= cur_jolts + 3 and a >= cur_jolts + 1:
-            #print('loop', a)
-            new_adapters = adapters[i:]
-            #print('recursing cj=', cur_jolts, 'a=', a, new_adapters)
-            tot += recurse2(new_adapters, a, exp, depth + 1)
+    def __repr__(self):
+        return 'J-{} [{}]'.format(self.jolts, ', '.join(str(x) for x in self.children.values()))
 
-    if cur_jolts == 0:
-        print(tot)
-    return tot
+def breadth(adapters, exp):
+    graph:Node = Node(0)
+    q:List[Node] = [graph]
+    d:Dict[int,Node] = {}
+    ps:DefaultDict[int, int] = defaultdict(lambda : 0)
 
-def breadth2(adapters, cur_jolts, exp, depth):
-    q = [cur_jolts]
+    d[0] = graph
 
-    count = 0
+    count:int = 0
     while len(q) > 0:
         c = q.pop()
-        if c + 3 == exp:
-            count += 1
-            if count % 1000000 == 0:
-                print(datetime.now(), count, len(q))
+        if c.is_exp(exp):
+            #print('reached end', c)
             continue
         for i in range(1, 4):
-            if c + i in adapters:
-                q.append(c + i)
+            if c.jolts + i in adapters:
+                if c.jolts + i not in d.keys():
+                    new_node = Node(c.jolts + i)
+                    c.children[new_node.jolts] = new_node
+                    new_node.parents[c.jolts] = c
+                    ps[new_node.jolts] += 1
+                    d[new_node.jolts] = new_node
+                    q.append(new_node)
+                else:
+                    existing_node = d[c.jolts + i]
+                    c.children[existing_node.jolts] = existing_node
+                    existing_node.parents[c.jolts] = c
+                    ps[existing_node.jolts] += 1
 
-    return count
+    matrix = np.zeros((max(d.keys())+1, max(d.keys())+1))
+    for n in d.values():
+        for nc in n.children.values():
+            #print('edge {} to {}'.format(n.jolts, nc.jolts))
+            matrix[n.jolts][nc.jolts] += 1
 
+    """
+    for row in matrix:
+        print(row)
+    """
+
+    npaths = [0] * (len(matrix) + 1)
+    npaths[0] = 1 # len(graph.children)
+
+    for i in range(0, len(matrix)):
+        for j in range(1, len(matrix)):
+            if matrix[i][j] == 1:
+                npaths[j] += npaths[i]
+            
+    #print('x', npaths)
+    #print('answer', npaths[exp - 3])
+
+    return npaths[exp - 3]
+
+    """
+    print("^2")
+    matrix_2 = matrix ** 8
+    for row in matrix_2:
+        print(row)
+    """
+
+def search_graph(g:Node, visited:Set[int], exp:int):
+    count = 0
+    for c in g.children.values():
+        if c.jolts in visited:
+            continue
+        if c.is_exp(exp):
+            visited.add(c.jolts)
+            count += 1
+
+def print_g(g:Node):
+    for n in g.children.values():
+        print('{}: pc = {}'.format(n.jolts, len(n.parents)))
+        print_g(n)
 
 with open("10.txt") as f:
     adapters = set(int(x) for x in f)
 
 #print(adapters)
 
-ret = recurse(adapters.copy(), 0, 0, 0)
-print('part1', ret[0] * ret[1])
-
 exp = max(adapters) + 3
-print(exp)
-tot = breadth2(adapters, 0, exp, 0)
-print('part2', tot)
+#print(exp)
+g = breadth(adapters, exp)
+print('part2', g)
