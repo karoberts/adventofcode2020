@@ -55,7 +55,7 @@ while True:
     grid = next_grid
 
 occupied = sum(1 for s in grid.values() if s == '#')
-print('part1', occupied)
+print('part2', occupied)
 
 #outputgrid(grid, x_size, y_size)
 
