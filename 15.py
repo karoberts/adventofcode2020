@@ -9,8 +9,14 @@ prev_spoken = dict()
 turn = len(spoken) + 1
 last_spoken = numbers[-1]
 
+part1 = None
+part2 = None
+
 while True:
-    if turn == 2021: break
+    if turn == 2021: part1 = last_spoken
+    if turn == 30_000_001:
+         part2 = last_spoken
+         break
 
     #print('Turn {}: last = {}'.format(turn, last_spoken))
 
@@ -36,4 +42,5 @@ while True:
 
     turn += 1
 
-print('part1', last_spoken)
+print('part1', part1)
+print('part1', part2)
