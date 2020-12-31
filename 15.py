@@ -18,6 +18,9 @@ while True:
          part2 = last_spoken
          break
 
+    if turn % 1_000_000 == 0:
+        print(turn)
+
     #print('Turn {}: last = {}'.format(turn, last_spoken))
 
     if last_spoken not in spoken:
