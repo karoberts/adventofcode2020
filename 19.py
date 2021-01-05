@@ -43,6 +43,7 @@ def process(rid, depth=0):
         rulestr = '(?:'
     
     r = rule[0]
+
     #print(' ' * depth, r)
     for item in r:
         if isinstance(item, int):
@@ -58,8 +59,8 @@ def process(rid, depth=0):
         rulestr += ')'
     return rulestr
 
+processed = set()
 s = process(0)
-#print(s)
 
 pat = re.compile('^' + s + '$')
 ans1 = sum(1 for t in texts if pat.match(t))
@@ -68,3 +69,23 @@ print('part1', ans1)
 
 #for r, v in rules.items():
 #    print('{}: {}'.format(r,v))
+
+rules[8] = [[42], [42, 8]]
+rules[11] = [[42, 31], [42, 11, 31]]
+
+s42 = process(42)
+s31 = process(31)
+pattern = (
+    f"^({s42})+"
+    "("
+    f"({s42}){{1}}({s31}){{1}}|"
+    f"({s42}){{2}}({s31}){{2}}|"
+    f"({s42}){{3}}({s31}){{3}}|"
+    f"({s42}){{4}}({s31}){{4}}"
+    ")$"
+)
+pat = re.compile(pattern)
+
+ans2 = sum(1 for x in texts if pat.match(x))
+
+print('part2', ans2)
