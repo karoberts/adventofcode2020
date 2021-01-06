@@ -1,0 +1,164 @@
+from collections import defaultdict
+from itertools import product
+from math import sqrt
+
+TILE_W = 10
+TILE_H = 10
+
+tiles = defaultdict(dict)
+
+def print_tile(tile):
+    for y in range(0, TILE_H):
+        for x in range(0, TILE_W):
+            print(tile[(x,y)], end='')
+        print()
+    print()
+
+def vflip(tile):
+    new_tile = dict()
+    for y in range(0, TILE_H):
+        for x in range(0, TILE_W):
+            new_tile[(x, TILE_H - y - 1)] = tile[(x,y)]
+    return new_tile
+
+def hflip(tile):
+    new_tile = dict()
+    for y in range(0, TILE_H):
+        for x in range(0, TILE_W):
+            new_tile[(TILE_W - x - 1, y)] = tile[(x,y)]
+    return new_tile
+
+def rot_left(tile):
+    new_tile = dict()
+    for y in range(0, TILE_H):
+        for x in range(0, TILE_W):
+            new_tile[(y, -x + TILE_W - 1)] = tile[(x,y)]
+    return new_tile
+
+def rot_right(tile):
+    new_tile = dict()
+    for y in range(0, TILE_H):
+        for x in range(0, TILE_W):
+            new_tile[(-y + TILE_H - 1, x)] = tile[(x,y)]
+    return new_tile
+
+def rot_180(tile):
+    new_tile = dict()
+    for y in range(0, TILE_H):
+        for x in range(0, TILE_W):
+            new_tile[(-x + TILE_W - 1, -y + TILE_H - 1)] = tile[(x,y)]
+    return new_tile
+
+def match_v_edge(tile1, x, tile2):
+    anti_x = TILE_W - x - 1
+    for i in range(0, TILE_H):
+        if tile1[(x, i)] != tile2[(anti_x, i)]:
+            return False
+    return True
+
+def match_h_edge(tile1, y, tile2):
+    anti_y = TILE_H - y - 1
+    for i in range(0, TILE_W):
+        if tile1[(i, y)] != tile2[(i, anti_y)]:
+            return False
+    return True
+
+with open("20.txt") as f:
+    tile_id = None
+    tile_y = 0
+    for line in (l.strip() for l in f):
+        if line.startswith('Tile '):
+            tile_id = int(line[5:-1])
+            tile_y = 0
+            continue
+        if line == '':
+            continue
+        tile_x = 0
+        for c in line:
+            tiles[tile_id][(tile_x, tile_y)] = c
+            tile_x += 1
+        tile_y += 1
+
+
+#print( match_h_edge(vflip(tiles[1951]), TILE_H - 1, vflip(tiles[2729])) )
+#print( match_v_edge(vflip(tiles[1951]), TILE_W - 1, vflip(tiles[2311])) )
+
+ADJS = [
+    (-1, 0, match_v_edge, 0),
+    (1, 0, match_v_edge, TILE_W - 1), 
+    (0, -1, match_h_edge, 0), 
+    (0, 1, match_h_edge, TILE_H - 9)
+]
+
+def find_positions(dim, px, py, matches, id_matches):
+    for tid, t in tiles.items():
+        if tid in id_matches:
+            continue
+        for orient in range(0, 8):
+            try_tile = t
+            if orient == 0:
+                pass
+            elif orient == 1:
+                try_tile = vflip(t)
+            elif orient == 2:
+                try_tile = hflip(t)
+            elif orient == 3:
+                try_tile = rot_right(t)
+            elif orient == 4:
+                try_tile = rot_left(t)
+            elif orient == 5:
+                try_tile = rot_180(t)
+            elif orient == 6:
+                try_tile = rot_left(vflip(t))
+            elif orient == 7:
+                try_tile = rot_right(vflip(t))
+            
+            bad = False
+            for a in ADJS:
+                c = (px + a[0], py + a[1])
+                if c in matches:
+                    if not a[2](try_tile, a[3], matches[c]):
+                        bad = True
+                        break
+
+            if not bad:
+                next_matches = matches.copy()
+                next_matches[(px, py)] = try_tile
+                next_id_matches = id_matches.copy()
+                next_id_matches[tid] = (px, py)
+                npx = px + 1
+                npy = py
+                if npx == dim:
+                    npx = 0
+                    npy = py + 1
+                if npy == dim:
+                    return (next_id_matches, next_matches)
+                x = find_positions(dim, npx, npy, next_matches, next_id_matches)
+                if x:
+                    return x
+    return None
+
+def calc(dim, r):
+    prod = 1
+    for tid, p in r.items():
+        if p in [(0,0), (dim - 1,0), (0,dim - 1), (dim - 1,dim - 1)]:
+            prod *= tid
+    return prod
+
+dim = int(sqrt(len(tiles)))
+
+r = find_positions(dim, 0, 0, dict(), dict())
+
+#print(r[0])
+print('part1', calc(dim, r[0]))
+
+"""
+for py in range(0,3):
+    for y in range(0, TILE_H):
+        for px in range(0,3):
+            for x in range(0,TILE_W):
+                print(r[1][(px,py)][(x,y)], end='')
+            print(' ', end='')
+        print()
+    print()
+"""
