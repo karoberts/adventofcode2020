@@ -7,46 +7,46 @@ TILE_H = 10
 
 tiles = defaultdict(dict)
 
-def print_tile(tile):
-    for y in range(0, TILE_H):
-        for x in range(0, TILE_W):
+def print_tile(tile,w=TILE_W,h=TILE_H):
+    for y in range(0, h):
+        for x in range(0, w):
             print(tile[(x,y)], end='')
         print()
     print()
 
-def vflip(tile):
+def vflip(tile,w=TILE_W,h=TILE_H):
     new_tile = dict()
-    for y in range(0, TILE_H):
-        for x in range(0, TILE_W):
-            new_tile[(x, TILE_H - y - 1)] = tile[(x,y)]
+    for y in range(0, h):
+        for x in range(0, w):
+            new_tile[(x, h - y - 1)] = tile[(x,y)]
     return new_tile
 
-def hflip(tile):
+def hflip(tile,w=TILE_W,h=TILE_H):
     new_tile = dict()
-    for y in range(0, TILE_H):
-        for x in range(0, TILE_W):
-            new_tile[(TILE_W - x - 1, y)] = tile[(x,y)]
+    for y in range(0, h):
+        for x in range(0, w):
+            new_tile[(w - x - 1, y)] = tile[(x,y)]
     return new_tile
 
-def rot_left(tile):
+def rot_left(tile,w=TILE_W,h=TILE_H):
     new_tile = dict()
-    for y in range(0, TILE_H):
-        for x in range(0, TILE_W):
-            new_tile[(y, -x + TILE_W - 1)] = tile[(x,y)]
+    for y in range(0, h):
+        for x in range(0, w):
+            new_tile[(y, -x + w - 1)] = tile[(x,y)]
     return new_tile
 
-def rot_right(tile):
+def rot_right(tile,w=TILE_W,h=TILE_H):
     new_tile = dict()
-    for y in range(0, TILE_H):
-        for x in range(0, TILE_W):
-            new_tile[(-y + TILE_H - 1, x)] = tile[(x,y)]
+    for y in range(0, h):
+        for x in range(0, w):
+            new_tile[(-y + h - 1, x)] = tile[(x,y)]
     return new_tile
 
-def rot_180(tile):
+def rot_180(tile,w=TILE_W,h=TILE_H):
     new_tile = dict()
-    for y in range(0, TILE_H):
-        for x in range(0, TILE_W):
-            new_tile[(-x + TILE_W - 1, -y + TILE_H - 1)] = tile[(x,y)]
+    for y in range(0, h):
+        for x in range(0, w):
+            new_tile[(-x + w - 1, -y + h - 1)] = tile[(x,y)]
     return new_tile
 
 def match_v_edge(tile1, x, tile2):
@@ -152,13 +152,88 @@ r = find_positions(dim, 0, 0, dict(), dict())
 #print(r[0])
 print('part1', calc(dim, r[0]))
 
+full_image = dict()
+fi_y = 0
+fi_w = 0
+fi_h = 0
+for py in range(0,dim):
+    for y in range(1, TILE_H-1):
+        fi_x = 0
+        for px in range(0,dim):
+            for x in range(1,TILE_W-1):
+                full_image[(fi_x,fi_y)] = r[1][(px,py)][(x,y)]
+                fi_x += 1
+                fi_w = max(fi_x, fi_w)
+        fi_y += 1
+        fi_h = max(fi_y, fi_h)
+
+monster = dict()
+monster_w = 0
+monster_h = 0
+with open("20-monster.txt") as f:
+    y = 0
+    for line in f:
+        x = 0
+        for c in line[:-1]:
+            monster[(x,y)] = c == '#'
+            x += 1
+            monster_w = max(x, monster_w)
+        y += 1
+        monster_h = max(y, monster_h)
+
+#img = hflip(rot_right(full_image, fi_w, fi_h),fi_w,fi_h)
+#print_tile(full_image,fi_w,fi_h)
+#print_tile(img,fi_w,fi_h)
+
 """
-for py in range(0,3):
-    for y in range(0, TILE_H):
-        for px in range(0,3):
-            for x in range(0,TILE_W):
-                print(r[1][(px,py)][(x,y)], end='')
-            print(' ', end='')
-        print()
+print()
+for y in range(0, monster_h):
+    for x in range(0, monster_w):
+        print('O' if monster[(x,y)] else ' ', end='')
     print()
 """
+
+def match(mon, tile, w, h, mw, mh):
+    monster_match = 0
+    for y in range(0, h - mh):
+        for x in range(0, w - mw):
+            found = True
+            for my in range(0, mh):
+                for mx in range(0, mw):
+                    if mon[(mx,my)]:
+                        if tile[(x+mx,y+my)] != '#':
+                            found = False
+                            break
+                if not found:
+                    break
+            if found:
+                monster_match += 1
+    return monster_match
+
+monster_c = sum(1 for x in monster.values() if x)
+
+roughness = sum(1 for x in full_image.values() if x == '#')
+
+for orient in range(0, 8):
+    try_tile = full_image
+    if orient == 0:
+        pass
+    elif orient == 1:
+        try_tile = vflip(full_image,fi_w,fi_h)
+    elif orient == 2:
+        try_tile = hflip(full_image,fi_w,fi_h)
+    elif orient == 3:
+        try_tile = rot_right(full_image,fi_w,fi_h)
+    elif orient == 4:
+        try_tile = rot_left(full_image,fi_w,fi_h)
+    elif orient == 5:
+        try_tile = rot_180(full_image,fi_w,fi_h)
+    elif orient == 6:
+        try_tile = rot_left(vflip(full_image,fi_w,fi_h),fi_w,fi_h)
+    elif orient == 7:
+        try_tile = rot_right(vflip(full_image,fi_w,fi_h), fi_w, fi_h)
+
+    r = match(monster, try_tile, fi_w, fi_h, monster_w, monster_h)
+    if r > 0:
+        print('part2', roughness - r * monster_c)
+        break
