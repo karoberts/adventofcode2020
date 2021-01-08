@@ -72,3 +72,8 @@ for ing_line in ings_lines:
 
 print('part1', c)
 
+vals = list()
+for an in sorted(rs[0].keys()):
+    vals.append(rs[0][an])
+
+print('part2', ','.join(vals))
