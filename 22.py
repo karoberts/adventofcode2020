@@ -44,18 +44,14 @@ winner = player1 if len(player2) == 0 else player2
 
 print('part1', sum(x * (i+1) for i, x in enumerate(reversed(winner))))
 
-globalcache = dict()
 def playgame(deck1, deck2, depth=0):
-    global globalcache
 
-    s = str(deck1) + str(deck2)
-    if s in globalcache:
-        print(f'got {s} from cache')
-        return globalcache[s]
+    if depth > 0 and  max(deck1) > max(deck2):
+        return 1
 
     hands = set()
     while deck1.size > 0 and deck2.size > 0:
-        s = str(deck1) + str(deck2)
+        s = (tuple(deck1), tuple(deck2))
         if s in hands:
             return 1
 
