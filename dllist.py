@@ -38,6 +38,10 @@ class dllistnode(object):
     def list(self):
         return self.__list
 
+    def setnext(self, node):
+        self.__next = node
+        node.__prev = self
+
     def _iter(self, direction, to=None):
         if to is not None:
             if not isinstance(to, dllistnode):
@@ -338,12 +342,14 @@ class dllist(object):
         return len(self) >= len(other)
 
     def __str__(self):
+        return 'dl'
         if self.__first is not None:
             return 'dllist([' + ', '.join((str(x) for x in self)) + '])'
         else:
             return 'dllist()'
 
     def __repr__(self):
+        return 'dl'
         if self.__first is not None:
             return 'dllist([' + ', '.join((repr(x) for x in self)) + '])'
         else:
