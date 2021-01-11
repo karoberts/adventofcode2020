@@ -36,6 +36,9 @@ axial_directions = {
 
 grid = defaultdict(lambda:False)
 
+i_limit = [0,0]
+j_limit = [0,0]
+
 for seq in dirs:
     pos = (0,0)
     i = 0
@@ -51,6 +54,41 @@ for seq in dirs:
 
         pos = (pos[0] + delt[0], pos[1] + delt[1])
 
+        if pos[0] < i_limit[0]: i_limit[0] = pos[0]
+        if pos[0] > i_limit[1]: i_limit[1] = pos[0]
+        if pos[1] < j_limit[0]: j_limit[0] = pos[1]
+        if pos[1] > j_limit[1]: j_limit[1] = pos[1]
+
     grid[pos] = not grid[pos]
 
 print('part1', sum(1 for x in grid.values() if x))
+
+def adj_count(g, p):
+    return sum(1 for _, x in axial_directions.items() if g[(p[0] + x[0], p[1] + x[1])])
+
+def fill_in(g):
+    for i in range(i_limit[0] - 2, i_limit[1] + 3):
+        for j in range(j_limit[0] - 2, j_limit[1] + 3):
+            _ = g[(i, j)]
+
+for day in range(0, 100):
+    fill_in(grid)
+    ng = grid.copy()
+    for p in list(grid.keys()):
+        bc = adj_count(grid, p)
+        if grid[p]:
+            if bc == 0 or bc > 2:
+                ng[p] = False
+        else:
+            if bc == 2:
+                ng[p] = True
+
+        if p[0] < i_limit[0]: i_limit[0] = p[0]
+        if p[0] > i_limit[1]: i_limit[1] = p[0]
+        if p[1] < j_limit[0]: j_limit[0] = p[1]
+        if p[1] > j_limit[1]: j_limit[1] = p[1]
+
+    grid = ng
+    #print(f'Day {day+1}: {sum(1 for x in grid.values() if x)}')
+
+print('part2', sum(1 for x in grid.values() if x))
